@@ -65,7 +65,7 @@ class Mounter(object):
                 utils.execute('xfs_repair', '-L', devpath,
                               run_as_root=True)
                 uuid = uuidutils.generate_uuid()
-                utils.execute('xfs_admin', '-U', uuid,
+                utils.execute('xfs_admin', '-U', uuid, devpath,
                               run_as_root=True)
                 utils.execute('mount', '-t', fstype, devpath, mountpoint,
                               run_as_root=True)
