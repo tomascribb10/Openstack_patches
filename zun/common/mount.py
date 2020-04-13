@@ -15,6 +15,8 @@ import os
 from oslo_log import log as logging
 from oslo_utils import excutils
 
+from oslo_utils import uuidutils
+
 from zun.common import exception
 from zun.common.i18n import _
 from zun.common import utils
@@ -59,8 +61,17 @@ class Mounter(object):
 
     def mount(self, devpath, mountpoint, fstype=None):
         try:
-            utils.execute('mount', '-t', fstype, devpath, mountpoint,
-                          run_as_root=True)
+            if fstype == 'xfs':
+                utils.execute('xfs_repair', '-L', devpath,
+                              run_as_root=True)
+                uuid = uuidutils.generate_uuid()
+                utils.execute('xfs_admin', '-U', uuid,
+                              run_as_root=True)
+                utils.execute('mount', '-t', fstype, devpath, mountpoint,
+                              run_as_root=True)
+            else:    
+                utils.execute('mount', '-t', fstype, devpath, mountpoint,
+                              run_as_root=True)
         except exception.CommandError as e:
             raise exception.MountException(_(
                 "Unexpected error while mount block device. "
