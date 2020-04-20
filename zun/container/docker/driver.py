@@ -293,7 +293,7 @@ class DockerDriver(driver.BaseDriver, driver.ContainerDriver,
             if self._should_limit_cpu(container):
                 host_config['cpu_shares'] = int(1024 * container.cpu)
             ##PatchNS
-            host_config['shm-size'] = '1G'
+            host_config['shm_size'] = '1G'
             if container.restart_policy:
                 count = int(container.restart_policy['MaximumRetryCount'])
                 name = container.restart_policy['Name']
