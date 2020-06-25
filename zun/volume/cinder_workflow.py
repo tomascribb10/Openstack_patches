@@ -95,15 +95,7 @@ class CinderWorkflow(object):
         LOG.info("Get connection information %s", conn_info)
 
         try:
-            ##PatchNS
-            volumen = cinder_api.get(volume_id)
-            volumen_type = volumen.volume_type + '.infraestructura.com.ar'
-            if volumen_type == volmap.host:
-                device_info = {}
-                prefijo_device_info = '/dev/zvol/Storage01/volume-'
-                device_info['path'] = prefijo_device_info + volume_id
-            else:
-                device_info = self._connect_volume(conn_info)
+            device_info = self._connect_volume(conn_info)
             LOG.info("Get device_info after connect to "
                      "volume %s", device_info)
         except Exception:
@@ -147,9 +139,21 @@ class CinderWorkflow(object):
         return device_info['path']
 
     def _connect_volume(self, conn_info):
+        #import pdb; pdb.set_trace()
         protocol = conn_info['driver_volume_type']
         connector = get_volume_connector(protocol)
-        device_info = connector.connect_volume(conn_info['data'])
+        #PatchNS
+        volume_id = conn_info['data']['volume_id']
+        volumen = self.cinder_api.get(conn_info['data']['volume_id'])
+        volumen_host = (volumen._info['os-vol-host-attr:host']).split('@')[0]
+        contenedor_host = get_volume_connector_properties()['host']
+        if volumen_host == contenedor_host:
+            device_info = {}
+            prefijo_device_info = '/dev/zvol/Storage01/volume-'
+            device_info['path'] = prefijo_device_info + volume_id
+        else:
+        #####
+            device_info = connector.connect_volume(conn_info['data'])
         return device_info
 
     def _disconnect_volume(self, conn_info):
